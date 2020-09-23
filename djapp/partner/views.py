@@ -1,17 +1,19 @@
 from .serializers import PartnerSerializer
 from .models import Partner
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.http import Http404
+from djapp.permissions import CustomDjangoModelPermissions
 
 
 class PartnerList(APIView):
-    permission_classes = (IsAuthenticated,)
-    """
-    List all partners, or create a new partners.
-    """
+    permission_classes = [IsAuthenticated, CustomDjangoModelPermissions]
+
+    def get_queryset(self):
+        return Partner.objects.all()
+
     def get(self, request, format=None):
         partners = Partner.objects.all()
         serializer = PartnerSerializer(partners, many=True)
@@ -26,7 +28,10 @@ class PartnerList(APIView):
 
 
 class PartnerDetail(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated, CustomDjangoModelPermissions]
+
+    def get_queryset(self):
+        return Partner.objects.all()
 
     def get_object(self, pk):
         try:
