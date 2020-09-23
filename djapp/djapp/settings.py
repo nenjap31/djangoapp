@@ -137,3 +137,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissions'
     ],
 }
+
+REST_AUTH_SERIALIZERS = {
+    'USER_DETAILS_SERIALIZER': 'account.serializers.UserSerializer',
+}

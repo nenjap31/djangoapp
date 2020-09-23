@@ -23,6 +23,7 @@ API_URL = 'api/' + API_VERSION + '/'
 urlpatterns = [
     path('admin/', admin.site.urls),
     path(API_URL, include('partner.urls')),
+    path(API_URL, include('account.urls')),
     path('api/api-token-auth/', obtain_auth_token, name='api_token_auth'),
     path('api-auth/', include('rest_framework.urls')),
 ]

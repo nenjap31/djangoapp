@@ -5,7 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.conf import settings
 from rest_framework.authtoken.models import Token
-from django.contrib.auth import get_user_model
+from djapp.getuser import GetCurrentUser
 
 
 # Create your models here.
@@ -21,13 +21,7 @@ class Account(models.Model):
 @receiver(post_save, sender=User)
 def create_user_account(sender, instance, created, **kwargs):
     if created:
-        import inspect
-        for frame_record in inspect.stack():
-            if frame_record[3] == 'get_response':
-                request = frame_record[0].f_locals['request']
-                break
-        else:
-            request = None
+        request = GetCurrentUser.GetUser()
         if request:
             if request.user.is_superuser:
                 partner = None
@@ -41,13 +35,7 @@ def create_user_account(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_user_account(sender, instance, **kwargs):
-    import inspect
-    for frame_record in inspect.stack():
-        if frame_record[3] == 'get_response':
-            request = frame_record[0].f_locals['request']
-            break
-    else:
-        request = None
+    request = GetCurrentUser.GetUser()
     if request:
         if not request.user.is_superuser:
             instance.account.save()
