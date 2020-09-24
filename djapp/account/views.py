@@ -8,6 +8,7 @@ from django.http import Http404
 from djapp.permissions import CustomDjangoModelPermissions
 from django.contrib.auth.models import User
 from djapp.pagination import PaginationHandlerMixin
+from .models import Account
 
 
 class BasicPagination(PageNumberPagination):
@@ -22,7 +23,13 @@ class AccountList(APIView, PaginationHandlerMixin):
         return User.objects.all()
 
     def get(self, request, format=None):
-        user = User.objects.all()
+        if request.user.is_superuser:
+            user = User.objects.all()
+        else:
+            current_user = request.user
+            entry = Account.objects.get(user_id=current_user.id)
+            partner = Account.objects.values_list('user_id').filter(partner_id=entry.partner_id)
+            user = User.objects.filter(id__in=partner)
         page = self.paginate_queryset(user)
         if page is not None:
             serializer = self.get_paginated_response(UserProfileSerializer(page, many=True).data)

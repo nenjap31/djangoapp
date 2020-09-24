@@ -8,3 +8,4 @@ Quick install guide
 - Clone from github repository: git clone https://github.com/nenjap31/djangoapp
 - activated a virtual environment
 - Install required Python packages (pip install -r requirements.txt)
+- Set Enviroment based on your needs (e.g. export DJANGOAPP_ENV=development).
