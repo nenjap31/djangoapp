@@ -10,11 +10,10 @@ from djapp.getuser import GetCurrentUser
 
 # Create your models here.
 class Account(models.Model):
-
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     birthdate = models.DateField(null=True, blank=True)
     address = models.TextField(null=True, blank=True)
-    phone = models.CharField(max_length=30,null=True, blank=True)
+    phone = models.CharField(max_length=30, null=True, blank=True)
     partner = models.ForeignKey(Partner, on_delete=models.CASCADE, null=True, blank=True)
 
 
@@ -24,6 +23,8 @@ def create_user_account(sender, instance, created, **kwargs):
         request = GetCurrentUser.GetUser()
         if request:
             if request.user.is_superuser:
+                partner = None
+            elif not request.user.id:
                 partner = None
             else:
                 entry = Account.objects.get(user_id=request.user.id)
@@ -40,10 +41,8 @@ def save_user_account(sender, instance, **kwargs):
         if not request.user.is_superuser:
             instance.account.save()
 
-
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def create_auth_token(sender, instance=None, created=False, **kwargs):
-    if created:
-        Token.objects.create(user=instance)
-
-
+# Create token if usert created
+# @receiver(post_save, sender=settings.AUTH_USER_MODEL)
+# def create_auth_token(sender, instance=None, created=False, **kwargs):
+#    if created:
+#        Token.objects.create(user=instance)

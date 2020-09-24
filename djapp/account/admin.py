@@ -46,7 +46,7 @@ class CustomUserAdmin(UserAdmin):
         if request.user.is_superuser:
             return self.readonly_fields
         if obj:  # editing an existing object
-            return self.readonly_fields + ('user_permissions','is_superuser')
+            return self.readonly_fields + ('user_permissions','is_superuser','username')
         return self.readonly_fields
 
 

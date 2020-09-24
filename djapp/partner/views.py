@@ -1,3 +1,4 @@
+from rest_framework.pagination import PageNumberPagination
 from .serializers import PartnerSerializer
 from .models import Partner
 from rest_framework import status, permissions
@@ -6,17 +7,27 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.http import Http404
 from djapp.permissions import CustomDjangoModelPermissions
+from djapp.pagination import PaginationHandlerMixin
 
 
-class PartnerList(APIView):
+class BasicPagination(PageNumberPagination):
+    page_size_query_param = 'limit'
+
+
+class PartnerList(APIView, PaginationHandlerMixin):
     permission_classes = [IsAuthenticated, CustomDjangoModelPermissions]
+    pagination_class = BasicPagination
 
     def get_queryset(self):
         return Partner.objects.all()
 
     def get(self, request, format=None):
         partners = Partner.objects.all()
-        serializer = PartnerSerializer(partners, many=True)
+        page = self.paginate_queryset(partners)
+        if page is not None:
+            serializer = self.get_paginated_response(PartnerSerializer(page,many=True).data)
+        else:
+            serializer = PartnerSerializer(partners, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
