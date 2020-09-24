@@ -58,22 +58,31 @@ class AccountDetail(APIView):
             raise Http404
 
     def get(self, request, pk, format=None):
-        user = self.get_object(pk)
+        if request.user.is_superuser:
+            user = self.get_object(pk)
+        else:
+            partner = Account.objects.get(user_id=request.user.id)
+            if partner.partner_id != pk:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            else:
+                user = self.get_object(pk)
         serializer = UserProfileSerializer(user)
         return Response(serializer.data)
 
     def put(self, request, pk, format=None):
-        user = self.get_object(pk)
+        if request.user.is_superuser:
+            user = self.get_object(pk)
+        else:
+            partner = Account.objects.get(user_id=request.user.id)
+            if partner.partner_id != pk:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            else:
+                user = self.get_object(pk)
         serializer = UserProfileSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(request.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk, format=None):
-        accounts = self.get_object(pk)
-        accounts.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ProfileDetail(APIView):

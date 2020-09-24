@@ -9,7 +9,6 @@ from django.http import Http404
 from djapp.permissions import CustomDjangoModelPermissions
 from djapp.pagination import PaginationHandlerMixin
 from account.models import Account
-from djapp.getuser import GetCurrentUser
 
 
 class BasicPagination(PageNumberPagination):
@@ -60,11 +59,12 @@ class PartnerDetail(APIView):
     def get(self, request, pk, format=None):
         if request.user.is_superuser:
             partners = self.get_object(pk)
-        partner = Account.objects.get(user_id=request.user.id)
-        if partner.partner_id != pk:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
-            partners = self.get_object(pk)
+            partner = Account.objects.get(user_id=request.user.id)
+            if partner.partner_id != pk:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            else:
+                partners = self.get_object(pk)
 
         serializer = PartnerSerializer(partners)
         return Response(serializer.data)
@@ -72,18 +72,14 @@ class PartnerDetail(APIView):
     def put(self, request, pk, format=None):
         if request.user.is_superuser:
             partners = self.get_object(pk)
-        partner = Account.objects.get(user_id=request.user.id)
-        if partner.partner_id != pk:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
-            partners = self.get_object(pk)
+            partner = Account.objects.get(user_id=request.user.id)
+            if partner.partner_id != pk:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            else:
+                partners = self.get_object(pk)
         serializer = PartnerSerializer(partners, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk, format=None):
-        partners = self.get_object(pk)
-        partners.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
