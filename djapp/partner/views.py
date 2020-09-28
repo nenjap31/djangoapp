@@ -1,7 +1,7 @@
 from rest_framework.pagination import PageNumberPagination
 from .serializers import PartnerSerializer
 from .models import Partner
-from rest_framework import status, permissions
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -9,6 +9,7 @@ from django.http import Http404
 from djapp.permissions import CustomDjangoModelPermissions
 from djapp.pagination import PaginationHandlerMixin
 from account.models import Account
+from djapp.external_services.rajaongkir import RajaOngkir
 
 
 class BasicPagination(PageNumberPagination):
@@ -83,3 +84,14 @@ class PartnerDetail(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetRajaongkir(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        args = {
+            'path': 'starter/city'
+        }
+        callapi = RajaOngkir.get_city(args)
+        return Response(callapi)

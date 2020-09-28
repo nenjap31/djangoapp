@@ -3,8 +3,6 @@ from django.contrib.auth.models import User
 from partner.models import Partner
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.conf import settings
-from rest_framework.authtoken.models import Token
 from djapp.getuser import GetCurrentUser
 
 

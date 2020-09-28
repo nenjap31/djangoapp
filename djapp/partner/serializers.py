@@ -5,4 +5,4 @@ from .models import Partner
 class PartnerSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Partner
-        fields = ('id','name', 'email','address', 'status')
+        fields = ('id', 'name', 'email', 'address', 'status')
