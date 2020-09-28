@@ -1,12 +1,14 @@
 from rest_framework.pagination import PageNumberPagination
-from .serializers import UserSerializer, UserProfileSerializer, ProfileSerializer, SignupSerializer, ChangePasswordSerializer
+from .serializers import UserSerializer, UserProfileSerializer, ProfileSerializer, SignupSerializer, \
+    ChangePasswordSerializer
+from .serializers import UsersGroupSerializer, GroupSerializer, PermissionSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.http import Http404
 from djapp.permissions import CustomDjangoModelPermissions
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group, Permission
 from djapp.pagination import PaginationHandlerMixin
 from .models import Account
 
@@ -86,7 +88,7 @@ class AccountDetail(APIView):
 
 
 class ProfileDetail(APIView):
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticated, ]
 
     def get_object(self, pk):
         try:
@@ -120,7 +122,7 @@ class SignupUser(APIView):
 
 
 class UpdatePassword(APIView):
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
 
     def get_object(self, pk):
         try:
@@ -144,3 +146,114 @@ class UpdatePassword(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserGroupList(APIView):
+    permission_classes = (IsAuthenticated, CustomDjangoModelPermissions)
+
+    def get_queryset(self):
+        return User.objects.all()
+
+    def get(self, request, format=None):
+        user = User.objects.all()
+        serializer = UsersGroupSerializer(user, many=True)
+        return Response(serializer.data)
+
+class UserGroupDetail(APIView):
+    permission_classes = (IsAuthenticated, CustomDjangoModelPermissions)
+
+    def get_queryset(self):
+        return User.objects.all()
+
+    def get_object(self, pk):
+        try:
+            return User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        user = self.get_object(pk)
+        serializer = UsersGroupSerializer(user)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        user = self.get_object(pk)
+        serializer = UsersGroupSerializer(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(request.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class GroupList(APIView):
+    permission_classes = (IsAuthenticated, CustomDjangoModelPermissions)
+
+    def get_queryset(self):
+        return Group.objects.all()
+
+    def get(self, request, format=None):
+        usergroup = Group.objects.all()
+        serializer = GroupSerializer(usergroup, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = GroupSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GroupDetail(APIView):
+    permission_classes = (IsAuthenticated, CustomDjangoModelPermissions)
+
+    def get_queryset(self):
+        return Group.objects.all()
+
+    def get_object(self, pk):
+        try:
+            return Group.objects.get(pk=pk)
+        except Group.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        group = self.get_object(pk)
+        serializer = GroupSerializer(group)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        group = self.get_object(pk)
+        serializer = GroupSerializer(group, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(request.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PermissionList(APIView):
+    permission_classes = (IsAuthenticated, CustomDjangoModelPermissions)
+
+    def get_queryset(self):
+        return Permission.objects.all()
+
+    def get(self, request, format=None):
+        perm = Permission.objects.all()
+        serializer = PermissionSerializer(perm, many=True)
+        return Response(serializer.data)
+
+
+class PermissionDetail(APIView):
+    permission_classes = (IsAuthenticated, CustomDjangoModelPermissions)
+
+    def get_queryset(self):
+        return Permission.objects.all()
+
+    def get_object(self, pk):
+        try:
+            return Permission.objects.get(pk=pk)
+        except Permission.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        perm = self.get_object(pk)
+        serializer = PermissionSerializer(perm)
+        return Response(serializer.data)
